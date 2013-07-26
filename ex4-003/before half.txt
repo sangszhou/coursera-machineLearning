@@ -1,0 +1,46 @@
+%%
+% first add one row to the top of X
+[row, ~] = size(X);
+X = [ones(row, 1), X];
+z1 = (Theta1 * X');
+a1 = sigmoid(z1);
+
+% a1 is also matrix, but a1 has a slight difference with  X
+% X's row represent a training example yet a1's column is a "training example"
+% so, we do not need to transpose a1
+[~, column] = size(a1);
+a1 = [ones(1, column); a1];
+z2 = Theta2 * a1;
+a2 = sigmoid(z2);
+
+% now, calculate the J_theta
+% a little bit complex. last time Iew just need to input y directly and
+% fmincg can do the rest for us. This time, we have to tranform the y
+
+o = a2;
+transform_y = zeros(num_labels, m);
+for i= 1 :m
+    for j=1 : num_labels
+        if (y(i) == j)
+            transform_y(j,i) = 1;
+        end
+    end
+end
+
+left_part = (-1 * transform_y).*(log(o));
+right_part = (1-transform_y).*(log(1-o));
+column_sum = ones(1,num_labels)*(left_part-right_part);
+row_sum = column_sum * ones(m, 1);
+J = row_sum/m;
+
+% regulization cost function
+[~, column] = size( Theta1);
+Theta1_trim = Theta1(:, 2:column );
+[~, column] = size( Theta2);
+Theta2_trim = Theta2(:, 2:column);
+
+regulation_theta1 = sum(sum(Theta1_trim.*Theta1_trim));
+regulation_theta2 = sum(sum(Theta2_trim.*Theta2_trim));
+
+J = J + (regulation_theta1 + regulation_theta2)*lambda/(2*m);
+%%
